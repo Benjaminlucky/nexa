@@ -175,7 +175,7 @@ export const realtorSignin = async (req, res) => {
 
     // Generate JWT Token
     const token = jwt.sign(
-      { id: existingRealtor._id, emailAddress: existingRealtor.emailAddress },
+      { id: existingRealtor._id, username: existingRealtor.username },
       process.env.JWT_SECRET,
       { expiresIn: "1h" }
     );
@@ -187,11 +187,30 @@ export const realtorSignin = async (req, res) => {
         firstName: existingRealtor.firstName,
         lastName: existingRealtor.lastName,
         emailAddress: existingRealtor.emailAddress,
+        username: existingRealtor.username,
       },
       token,
     });
   } catch (error) {
     console.error("error signing in", error);
     return res.status(500).json({ message: "Server Error" });
+  }
+};
+
+// Check if Username exist
+
+export const checkUsernameExists = async (req, res) => {
+  const { username } = req.params;
+
+  try {
+    const existingRealtor = await Realtor.findOne({ username });
+    if (existingRealtor) {
+      return res.json({ exists: true, referredBy: existingRealtor.referredBy });
+    } else {
+      return res.json({ exist: false });
+    }
+  } catch (error) {
+    console.error("error checking username", error);
+    return res.status(500).json({ error: "Internal Server Error" });
   }
 };
